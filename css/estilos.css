@@ -113,3 +113,66 @@
     font-family: inherit;
   }
   .registro .guardar:active { background: var(--accent-dark); }
+  /* Series por ejercicio */
+.ref-ultima { font-size: 13px; color: var(--muted); margin-top: 8px; }
+.series-lista { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.serie-row { display: flex; align-items: center; gap: 8px; }
+.serie-num { width: 22px; flex-shrink: 0; text-align: center; color: var(--muted); font-size: 14px; font-weight: 600; }
+.serie-row input {
+  width: 100%;
+  min-width: 0;
+  background: var(--bg);
+  border: 1px solid var(--surface-2);
+  border-radius: 10px;
+  padding: 11px;
+  color: var(--text);
+  font-size: 16px;
+  text-align: center;
+  font-family: inherit;
+}
+.serie-row input:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+.check {
+  width: 46px;
+  flex-shrink: 0;
+  background: var(--surface-2);
+  color: var(--text);
+  border: none;
+  border-radius: 10px;
+  padding: 11px 0;
+  font-size: 16px;
+  cursor: pointer;
+}
+.serie-row.hecha input { border-color: var(--accent); color: var(--muted); }
+.serie-row.hecha .check { background: var(--accent); color: #04210f; }
+
+/* Banner de descanso */
+#descanso-banner {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%) translateY(150%);
+  width: calc(100% - 32px);
+  max-width: 568px;
+  background: var(--accent);
+  color: #04210f;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  transition: transform 0.25s ease;
+  z-index: 50;
+}
+#descanso-banner.visible { transform: translateX(-50%) translateY(0); }
+#descanso-banner.fin { background: var(--accent-dark); }
+#descanso-banner button {
+  background: rgba(0,0,0,0.18);
+  color: #04210f;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: 600;
+  cursor: pointer;
+}

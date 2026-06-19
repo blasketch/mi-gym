@@ -1,4 +1,4 @@
-const CACHE = "mi-gym-v1";
+const CACHE = "mi-gym-v2";
 const ARCHIVOS = [
   "./",
   "./index.html",
@@ -24,8 +24,16 @@ self.addEventListener("activate", (e) => {
   self.clients.claim();
 });
 
+// Red primero; si no hay conexión, tira de la caché.
 self.addEventListener("fetch", (e) => {
+  if (e.request.method !== "GET") return;
   e.respondWith(
-    caches.match(e.request).then((resp) => resp || fetch(e.request))
+    fetch(e.request)
+      .then((resp) => {
+        const copia = resp.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copia));
+        return resp;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
