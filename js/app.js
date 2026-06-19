@@ -225,9 +225,9 @@ function renderDia(diaId) {
 
       const peso = parseFloat(inPeso.value);
       const reps = parseInt(inReps.value, 10);
-      if (isNaN(peso)) { inPeso.focus(); return; }
+      if (isNaN(peso) && isNaN(reps)) { inPeso.focus(); return; }
 
-      guardarSet(ejId, indice, peso, isNaN(reps) ? null : reps);
+      guardarSet(ejId, indice, isNaN(peso) ? null : peso, isNaN(reps) ? null : reps);
       fila.classList.add("hecha");
       iniciarDescanso(descanso);
     });
