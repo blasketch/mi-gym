@@ -256,6 +256,7 @@ function renderInicio() {
         <h1>Mi Gym</h1>
         <p class="sub">Elige el entrenamiento de hoy</p>
       </div>
+      <button class="btn-progreso" id="btn-progreso">Progreso</button>
     </header>
     <div class="panel">
       <div class="stats">
@@ -278,6 +279,7 @@ function renderInicio() {
   });
 
   app.innerHTML = html;
+  document.getElementById("btn-progreso").addEventListener("click", renderProgreso);
   document.querySelectorAll(".dia-card").forEach((card) => {
     card.addEventListener("click", () => renderDia(card.dataset.dia));
   });
@@ -378,6 +380,127 @@ function renderDia(diaId) {
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("service-worker.js").catch(console.error);
+  });
+}
+
+// ---------- Peso corporal ----------
+const PESO_CORP = "mig-peso-corporal";
+function getPesoCorporal() {
+  const d = localStorage.getItem(PESO_CORP);
+  return d ? JSON.parse(d) : [];
+}
+function guardarPesoCorporal(peso) {
+  const arr = getPesoCorporal();
+  const idx = arr.findIndex((r) => r.fecha === hoy);
+  if (idx >= 0) arr[idx].peso = peso;
+  else arr.push({ fecha: hoy, peso });
+  arr.sort((a, b) => a.fecha.localeCompare(b.fecha));
+  localStorage.setItem(PESO_CORP, JSON.stringify(arr));
+}
+
+// ---------- Datos de progreso por ejercicio ----------
+function puntosEjercicio(ejId) {
+  const sesiones = getSesiones(ejId);
+  let hayPeso = false;
+  sesiones.forEach((s) => s.series.filter(Boolean).forEach((x) => { if (x.peso != null) hayPeso = true; }));
+  const puntos = [];
+  sesiones.forEach((s) => {
+    const sets = s.series.filter(Boolean);
+    if (hayPeso) {
+      const pesos = sets.map((x) => x.peso).filter((p) => p != null);
+      if (pesos.length) puntos.push({ fecha: s.fecha, valor: Math.max(...pesos) });
+    } else {
+      const reps = sets.map((x) => x.reps).filter((r) => r != null);
+      if (reps.length) puntos.push({ fecha: s.fecha, valor: Math.max(...reps) });
+    }
+  });
+  return { puntos, unidad: hayPeso ? "kg" : "reps" };
+}
+function prEjercicio(ejId) {
+  const sets = [];
+  getSesiones(ejId).forEach((s) => s.series.filter(Boolean).forEach((x) => sets.push(x)));
+  const conPeso = sets.filter((x) => x.peso != null);
+  if (conPeso.length) {
+    const maxPeso = Math.max(...conPeso.map((x) => x.peso));
+    const reps = Math.max(...conPeso.filter((x) => x.peso === maxPeso).map((x) => x.reps ?? 0));
+    return { peso: maxPeso, reps: reps || null };
+  }
+  const conReps = sets.filter((x) => x.reps != null);
+  if (conReps.length) return { reps: Math.max(...conReps.map((x) => x.reps)) };
+  return null;
+}
+
+// ---------- Gráfica en SVG ----------
+function graficaSVG(puntos, unidad) {
+  if (puntos.length < 2) return `<div class="grafica-vacia">Necesitas al menos 2 registros para ver la gráfica</div>`;
+  const W = 300, H = 120, pad = 24;
+  const vals = puntos.map((p) => p.valor);
+  let min = Math.min(...vals), max = Math.max(...vals);
+  if (min === max) { min -= 1; max += 1; }
+  const x = (i) => pad + (i / (puntos.length - 1)) * (W - pad * 2);
+  const y = (v) => H - pad - ((v - min) / (max - min)) * (H - pad * 2);
+  const linea = puntos.map((p, i) => `${x(i).toFixed(1)},${y(p.valor).toFixed(1)}`).join(" ");
+  const dots = puntos.map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.valor).toFixed(1)}" r="3" fill="var(--accent)"/>`).join("");
+  return `
+    <svg viewBox="0 0 ${W} ${H}" class="grafica">
+      <polyline points="${linea}" fill="none" stroke="var(--accent)" stroke-width="2"/>
+      ${dots}
+      <text x="${pad}" y="12" fill="var(--muted)" font-size="11">${max} ${unidad}</text>
+      <text x="${pad}" y="${H - 4}" fill="var(--muted)" font-size="11">${min} ${unidad}</text>
+    </svg>`;
+}
+
+// ---------- Pantalla de progreso ----------
+function renderProgreso() {
+  const pesos = getPesoCorporal();
+  const ultimo = pesos.length ? pesos[pesos.length - 1] : null;
+
+  let html = `
+    <header class="cabecera">
+      <button class="volver" id="btn-volver">← Volver</button>
+      <div><h1>Progreso</h1></div>
+    </header>
+    <div class="ejercicio">
+      <div class="titulo">Peso corporal</div>
+      <div class="ref-ultima">${ultimo ? `Último: ${ultimo.peso} kg · ${fechaCorta(ultimo.fecha)}` : "Sin registros todavía"}</div>
+      <div class="registro">
+        <input type="number" inputmode="decimal" placeholder="kg" id="in-peso-corp">
+        <button class="guardar" id="btn-peso-corp">Guardar</button>
+      </div>
+      ${graficaSVG(pesos.map((p) => ({ fecha: p.fecha, valor: p.peso })), "kg")}
+    </div>
+  `;
+
+  let lista = "";
+  RUTINAS.forEach((dia) => {
+    dia.ejercicios.forEach((ej) => {
+      const { puntos, unidad } = puntosEjercicio(ej.id);
+      if (!puntos.length) return;
+      const pr = prEjercicio(ej.id);
+      const prTxt = pr
+        ? (pr.peso != null ? `PR: ${pr.peso} kg${pr.reps != null ? ` × ${pr.reps}` : ""}` : `PR: ${pr.reps} reps`)
+        : "";
+      lista += `
+        <div class="ejercicio">
+          <div class="titulo">${ej.nombre}</div>
+          <div class="pr">${prTxt}</div>
+          ${graficaSVG(puntos, unidad)}
+        </div>
+      `;
+    });
+  });
+
+  html += lista || `<p class="sub" style="text-align:center; margin-top:24px">Aún no has registrado ejercicios. Entrena y tu progreso aparecerá aquí.</p>`;
+
+  app.innerHTML = html;
+
+  document.getElementById("btn-volver").addEventListener("click", renderInicio);
+  document.getElementById("btn-peso-corp").addEventListener("click", () => {
+    const input = document.getElementById("in-peso-corp");
+    const peso = parseFloat(input.value);
+    if (isNaN(peso)) { input.focus(); return; }
+    guardarPesoCorporal(peso);
+    renderProgreso();
   });
 }
 
