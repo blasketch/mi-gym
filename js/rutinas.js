@@ -72,3 +72,11 @@ const FASES = [
   { id: "principal",       nombre: "Bloque principal", hasta: 32 },
   { id: "intensificacion", nombre: "Intensificación",  hasta: Infinity },
 ];
+
+// Cómo ajusta cada fase el plan base (que equivale a "Bloque principal").
+// dSeries: series a sumar/restar.  dReps: desplazamiento del rango de reps.
+const MODIFICADORES = {
+  reincorporacion: { dSeries: -1, dReps: 2 },   // menos volumen y reps algo más altas (más suave)
+  principal:       { dSeries: 0,  dReps: 0 },   // el plan tal cual
+  intensificacion: { dSeries: 0,  dReps: -2 },  // reps más bajas = más peso
+};

@@ -83,8 +83,50 @@ function migrar() {
 function resumenSeries(sesion) {
   return sesion.series
     .filter(Boolean)
-    .map((s) => `${s.peso}×${s.reps != null ? s.reps : "-"}`)
+    .map((s) => {
+      const r = s.reps != null ? s.reps : "-";
+      return s.peso != null ? `${s.peso}×${r}` : `${r} reps`;
+    })
     .join(", ");
+}
+
+// Ajusta un rango de reps según la fase ("6-8" + 2 -> "8-10")
+function ajustarReps(repsStr, delta) {
+  const rango = String(repsStr).match(/^(\d+)\s*-\s*(\d+)(.*)$/);
+  if (rango) {
+    const lo = Math.max(1, parseInt(rango[1], 10) + delta);
+    const hi = Math.max(lo, parseInt(rango[2], 10) + delta);
+    return `${lo}-${hi}${rango[3]}`;
+  }
+  const simple = String(repsStr).match(/^(\d+)(.*)$/);
+  if (simple) {
+    const n = Math.max(1, parseInt(simple[1], 10) + delta);
+    return `${n}${simple[2]}`;
+  }
+  return repsStr;
+}
+
+// Tope de reps de un rango (para saber cuándo subir peso)
+function topReps(repsStr) {
+  const rango = String(repsStr).match(/^(\d+)\s*-\s*(\d+)/);
+  if (rango) return parseInt(rango[2], 10);
+  const simple = String(repsStr).match(/^(\d+)/);
+  if (simple) return parseInt(simple[1], 10);
+  return null;
+}
+
+// Sugerencia de subir peso si la última vez completaste el tope en todas las series
+function sugerencia(ej, series, top) {
+  if (top == null) return null;
+  const previa = getUltimaSesionPrevia(ej.id);
+  if (!previa) return null;
+  const sets = previa.series.filter(Boolean);
+  if (sets.length < series) return null;
+  const todasAlTope = sets.every((s) => s.reps != null && s.reps >= top);
+  if (!todasAlTope) return null;
+  const pesos = sets.map((s) => s.peso).filter((p) => p != null);
+  if (pesos.length) return `Subir peso: prueba ${Math.max(...pesos) + 2.5} kg`;
+  return `Subir intensidad: añade repeticiones o lastre`;
 }
 
 // ---------- Temporizador de descanso ----------
@@ -246,6 +288,9 @@ function renderDia(diaId) {
   const dia = RUTINAS.find((d) => d.id === diaId);
   if (!dia) return renderInicio();
 
+  const faseId = faseActual(getDiasEntrenados().length).id;
+  const mod = MODIFICADORES[faseId] || { dSeries: 0, dReps: 0 };
+
   let html = `
     <header class="cabecera">
       <button class="volver" id="btn-volver">← Volver</button>
@@ -257,6 +302,10 @@ function renderDia(diaId) {
   `;
 
   dia.ejercicios.forEach((ej) => {
+    const series = Math.max(2, ej.series + mod.dSeries);
+    const reps = ajustarReps(ej.reps, mod.dReps);
+    const top = topReps(reps);
+
     const previa = getUltimaSesionPrevia(ej.id);
     const hoyS = getSesionHoy(ej.id);
     const refUltima = previa
@@ -264,8 +313,11 @@ function renderDia(diaId) {
       : `<div class="ref-ultima">Primer registro de este ejercicio</div>`;
     const nota = ej.nota ? `<div class="nota">${ej.nota}</div>` : "";
 
+    const sug = sugerencia(ej, series, top);
+    const sugHTML = sug ? `<div class="sugerencia">${sug}</div>` : "";
+
     let filas = "";
-    for (let i = 0; i < ej.series; i++) {
+    for (let i = 0; i < series; i++) {
       const hechaHoy = hoyS && hoyS.series[i];
       const ref = hechaHoy || (previa && previa.series[i]) || null;
       const vp = ref ? ref.peso : "";
@@ -283,8 +335,9 @@ function renderDia(diaId) {
     html += `
       <div class="ejercicio">
         <div class="titulo">${ej.nombre}</div>
-        <div class="prescripcion">${ej.series} series × ${ej.reps} reps · descanso ${ej.descanso}</div>
+        <div class="prescripcion">${series} series × ${reps} reps · descanso ${ej.descanso}</div>
         ${nota}
+        ${sugHTML}
         ${refUltima}
         <div class="series-lista">${filas}</div>
       </div>
