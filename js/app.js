@@ -355,9 +355,12 @@ function renderDia(diaId) {
     `;
   });
 
+  html += `<button class="terminar" id="btn-terminar">Terminar sesión</button>`;
+
   app.innerHTML = html;
 
   document.getElementById("btn-volver").addEventListener("click", renderInicio);
+  document.getElementById("btn-terminar").addEventListener("click", () => mostrarResumen(dia));
 
   document.querySelectorAll(".check").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -382,13 +385,6 @@ function renderDia(diaId) {
       fila.classList.add("hecha");
       iniciarDescanso(descanso);
     });
-  });
-}
-
-// ---------- Service worker ----------
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("service-worker.js").catch(console.error);
   });
 }
 
@@ -552,6 +548,65 @@ function htmlConstancia() {
       <div class="habitos">${chips}</div>
     </div>
   `;
+}
+
+// ---------- Resumen de sesión ----------
+function resumenSesion(dia) {
+  let seriesHechas = 0, volumen = 0;
+  const prs = [];
+  dia.ejercicios.forEach((ej) => {
+    const hoyS = getSesionHoy(ej.id);
+    if (!hoyS) return;
+    const sets = hoyS.series.filter(Boolean);
+    seriesHechas += sets.length;
+    sets.forEach((s) => { if (s.peso != null && s.reps != null) volumen += s.peso * s.reps; });
+    const pesosHoy = sets.map((s) => s.peso).filter((p) => p != null);
+    if (pesosHoy.length) {
+      const maxHoy = Math.max(...pesosHoy);
+      let maxHisto = 0;
+      getSesiones(ej.id).filter((s) => s.fecha !== hoy).forEach((s) =>
+        s.series.filter(Boolean).forEach((x) => { if (x.peso != null && x.peso > maxHisto) maxHisto = x.peso; }));
+      if (maxHisto > 0 && maxHoy > maxHisto) prs.push({ nombre: ej.nombre, peso: maxHoy });
+    }
+  });
+  return { seriesHechas, volumen, prs };
+}
+
+function mostrarResumen(dia) {
+  const { seriesHechas, volumen, prs } = resumenSesion(dia);
+
+  let cuerpo;
+  if (seriesHechas === 0) {
+    cuerpo = `<p class="sub" style="text-align:center">Aún no has registrado ninguna serie hoy.</p>`;
+  } else {
+    const prsHTML = prs.length
+      ? `<div class="resumen-prs">
+           <div class="resumen-prs-titulo">¡Récords nuevos!</div>
+           ${prs.map((p) => `<div class="pr-item">${p.nombre} · ${p.peso} kg</div>`).join("")}
+         </div>`
+      : `<p class="sub" style="text-align:center; margin-top:12px">Sin récords hoy, pero sumando. ¡Sigue así!</p>`;
+    cuerpo = `
+      <div class="resumen-stats">
+        <div class="stat"><div class="stat-num">${seriesHechas}</div><div class="stat-lbl">series</div></div>
+        <div class="stat"><div class="stat-num">${Math.round(volumen)}</div><div class="stat-lbl">kg movidos</div></div>
+      </div>
+      ${prsHTML}
+    `;
+  }
+
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-titulo">Sesión completada</div>
+      ${cuerpo}
+      <button class="guardar" id="resumen-inicio">Ir al inicio</button>
+      <button class="modal-cerrar" id="resumen-cerrar">Seguir aquí</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  document.getElementById("resumen-cerrar").addEventListener("click", () => modal.remove());
+  document.getElementById("resumen-inicio").addEventListener("click", () => { modal.remove(); renderInicio(); });
 }
 
 // ---------- Arranque ----------
