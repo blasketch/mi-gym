@@ -80,3 +80,12 @@ const MODIFICADORES = {
   principal:       { dSeries: 0,  dReps: 0 },   // el plan tal cual
   intensificacion: { dSeries: 0,  dReps: -2 },  // reps más bajas = más peso
 };
+
+// Hábitos diarios del tracker de constancia. Edítalos a tu gusto.
+const HABITOS = [
+  { id: "proteina",    nombre: "Proteína" },
+  { id: "suplementos", nombre: "Suplementos" },
+  { id: "pasos",       nombre: "Pasos / cardio", objetivo: 10000 },
+  { id: "lectura",       nombre: "10 paginas de lectura", objetivo: 10 },
+  { id: "estudio",       nombre: "Estudio", objetivo: 10 }
+];

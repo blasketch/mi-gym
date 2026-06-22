@@ -266,6 +266,7 @@ function renderInicio() {
       </div>
       ${faseHTML}
     </div>
+    ${htmlConstancia()}
   `;
 
   RUTINAS.forEach((dia) => {
@@ -282,6 +283,14 @@ function renderInicio() {
   document.getElementById("btn-progreso").addEventListener("click", renderProgreso);
   document.querySelectorAll(".dia-card").forEach((card) => {
     card.addEventListener("click", () => renderDia(card.dataset.dia));
+  });
+  document.querySelectorAll(".habito").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      toggleHabito(hoy, btn.dataset.hab);
+      btn.classList.toggle("on");
+      const r = document.getElementById("racha-hab");
+      if (r) r.textContent = textoRachaHab(rachaHabitos());
+    });
   });
 }
 
@@ -502,6 +511,47 @@ function renderProgreso() {
     guardarPesoCorporal(peso);
     renderProgreso();
   });
+}
+
+// ---------- Constancia diaria (hábitos) ----------
+const HAB = "mig-habitos-";
+function getHabitosDia(fecha) {
+  const d = localStorage.getItem(HAB + fecha);
+  return d ? JSON.parse(d) : [];
+}
+function toggleHabito(fecha, habitoId) {
+  const marcados = getHabitosDia(fecha);
+  const i = marcados.indexOf(habitoId);
+  if (i >= 0) marcados.splice(i, 1);
+  else marcados.push(habitoId);
+  localStorage.setItem(HAB + fecha, JSON.stringify(marcados));
+}
+function rachaHabitos() {
+  if (!HABITOS.length) return 0;
+  const completo = (f) => getHabitosDia(f).length >= HABITOS.length;
+  let cursor = new Date(hoy + "T00:00:00");
+  if (!completo(isoDe(cursor))) cursor.setDate(cursor.getDate() - 1);
+  let racha = 0;
+  while (completo(isoDe(cursor))) { racha++; cursor.setDate(cursor.getDate() - 1); }
+  return racha;
+}
+function textoRachaHab(n) {
+  return n > 0 ? `Racha: ${n} ${n === 1 ? "día" : "días"}` : "Empieza tu racha";
+}
+function htmlConstancia() {
+  const marcados = getHabitosDia(hoy);
+  const chips = HABITOS.map((h) =>
+    `<button class="habito ${marcados.includes(h.id) ? "on" : ""}" data-hab="${h.id}">${h.nombre}</button>`
+  ).join("");
+  return `
+    <div class="panel">
+      <div class="constancia-top">
+        <span>Constancia de hoy</span>
+        <span class="racha-hab" id="racha-hab">${textoRachaHab(rachaHabitos())}</span>
+      </div>
+      <div class="habitos">${chips}</div>
+    </div>
+  `;
 }
 
 // ---------- Arranque ----------
