@@ -129,8 +129,85 @@ function cerrarDescanso() {
   document.getElementById("descanso-banner").classList.remove("visible");
 }
 
+// ---------- Días entrenados, racha y fase ----------
+function isoDe(d) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+function lunesISO(fechaISO) {
+  const d = new Date(fechaISO + "T00:00:00");
+  const dia = (d.getDay() + 6) % 7; // 0 = lunes
+  d.setDate(d.getDate() - dia);
+  return isoDe(d);
+}
+function getDiasEntrenados() {
+  const fechas = new Set();
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(LOG)) {
+      const sesiones = JSON.parse(localStorage.getItem(k)) || [];
+      sesiones.forEach((s) => { if (s.fecha) fechas.add(s.fecha); });
+    }
+  }
+  return [...fechas].sort();
+}
+function getDiasEstaSemana() {
+  const lunes = lunesISO(hoy);
+  return getDiasEntrenados().filter((f) => lunesISO(f) === lunes).length;
+}
+function getRachaSemanas() {
+  const dias = getDiasEntrenados();
+  if (!dias.length) return 0;
+  const semanas = new Set(dias.map(lunesISO));
+  let cursor = new Date(lunesISO(hoy) + "T00:00:00");
+  if (!semanas.has(isoDe(cursor))) cursor.setDate(cursor.getDate() - 7);
+  let racha = 0;
+  while (semanas.has(isoDe(cursor))) { racha++; cursor.setDate(cursor.getDate() - 7); }
+  return racha;
+}
+function faseActual(totalDias) {
+  let inicio = 0;
+  for (const fase of FASES) {
+    if (totalDias <= fase.hasta) {
+      return { id: fase.id, nombre: fase.nombre, diasEnFase: totalDias - inicio, total: fase.hasta - inicio };
+    }
+    inicio = fase.hasta;
+  }
+  const u = FASES[FASES.length - 1];
+  return { id: u.id, nombre: u.nombre, diasEnFase: totalDias - inicio, total: Infinity };
+}
+function siguienteFaseNombre(faseId) {
+  const idx = FASES.findIndex((f) => f.id === faseId);
+  return idx >= 0 && idx < FASES.length - 1 ? FASES[idx + 1].nombre : null;
+}
+
 // ---------- Pantalla de inicio ----------
 function renderInicio() {
+  const total = getDiasEntrenados().length;
+  const racha = getRachaSemanas();
+  const semana = getDiasEstaSemana();
+  const fase = faseActual(total);
+
+  let faseHTML;
+  if (isFinite(fase.total) && fase.total > 0) {
+    const pct = Math.min(100, Math.round((fase.diasEnFase / fase.total) * 100));
+    const faltan = fase.total - fase.diasEnFase;
+    faseHTML = `
+      <div class="fase">
+        <div class="fase-top"><span>Fase: ${fase.nombre}</span><span>${fase.diasEnFase}/${fase.total}</span></div>
+        <div class="barra"><div class="barra-fill" style="width:${pct}%"></div></div>
+        <div class="fase-sub">${faltan} días para ${siguienteFaseNombre(fase.id)}</div>
+      </div>`;
+  } else {
+    faseHTML = `
+      <div class="fase">
+        <div class="fase-top"><span>Fase: ${fase.nombre}</span><span>fase final</span></div>
+        <div class="barra"><div class="barra-fill" style="width:100%"></div></div>
+      </div>`;
+  }
+
   let html = `
     <header class="cabecera">
       <div>
@@ -138,7 +215,16 @@ function renderInicio() {
         <p class="sub">Elige el entrenamiento de hoy</p>
       </div>
     </header>
+    <div class="panel">
+      <div class="stats">
+        <div class="stat"><div class="stat-num">${total}</div><div class="stat-lbl">días entrenados</div></div>
+        <div class="stat"><div class="stat-num">${racha}</div><div class="stat-lbl">sem. seguidas</div></div>
+        <div class="stat"><div class="stat-num">${semana}</div><div class="stat-lbl">esta semana</div></div>
+      </div>
+      ${faseHTML}
+    </div>
   `;
+
   RUTINAS.forEach((dia) => {
     html += `
       <button class="dia-card" data-dia="${dia.id}">
@@ -148,6 +234,7 @@ function renderInicio() {
       </button>
     `;
   });
+
   app.innerHTML = html;
   document.querySelectorAll(".dia-card").forEach((card) => {
     card.addEventListener("click", () => renderDia(card.dataset.dia));

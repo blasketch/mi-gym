@@ -65,3 +65,10 @@ const RUTINAS = [
       ],
     },
   ];
+
+  // Fases del plan. "hasta" = número de día entrenado en que termina cada fase.
+const FASES = [
+  { id: "reincorporacion", nombre: "Reincorporación", hasta: 12 },
+  { id: "principal",       nombre: "Bloque principal", hasta: 32 },
+  { id: "intensificacion", nombre: "Intensificación",  hasta: Infinity },
+];
