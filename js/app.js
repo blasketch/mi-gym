@@ -3,7 +3,31 @@
 // ===================================================================
 
 const app = document.getElementById("app");
-const LOG = "mig-log-";
+
+const STORAGE = {
+  LOG: "mig-log-",
+  PESO_CORP: "mig-peso-corporal",
+  HABITOS: "mig-habitos-",
+  MIGRADO: "mig-migrado-v2",
+};
+
+function storageGet(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function storageSet(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 // ---------- Fechas y formato ----------
 function hoyISO() {
@@ -29,11 +53,10 @@ function parseDescanso(texto) {
 
 // ---------- Almacenamiento (sesiones con series) ----------
 function getSesiones(ejId) {
-  const d = localStorage.getItem(LOG + ejId);
-  return d ? JSON.parse(d) : [];
+  return storageGet(STORAGE.LOG + ejId) || [];
 }
 function setSesiones(ejId, sesiones) {
-  localStorage.setItem(LOG + ejId, JSON.stringify(sesiones));
+  storageSet(STORAGE.LOG + ejId, sesiones);
 }
 function getSesionHoy(ejId) {
   return getSesiones(ejId).find((s) => s.fecha === hoy) || null;
@@ -56,14 +79,14 @@ function borrarSet(ejId, indice) {
   const sesiones = getSesiones(ejId);
   const idx = sesiones.findIndex((s) => s.fecha === hoy);
   if (idx === -1) return;
-  delete sesiones[idx].series[indice];
-  if (sesiones[idx].series.filter(Boolean).length === 0) sesiones.splice(idx, 1);
+  sesiones[idx].series.splice(indice, 1);
+  if (sesiones[idx].series.length === 0) sesiones.splice(idx, 1);
   setSesiones(ejId, sesiones);
 }
 
 // ---------- Migración del formato antiguo (no perder datos) ----------
 function migrar() {
-  if (localStorage.getItem("mig-migrado-v2")) return;
+  if (storageGet(STORAGE.MIGRADO)) return;
   const viejas = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
@@ -71,12 +94,71 @@ function migrar() {
   }
   viejas.forEach((k) => {
     const id = k.slice("mig-pesos-".length);
-    if (localStorage.getItem(LOG + id)) return;
-    const arr = JSON.parse(localStorage.getItem(k)) || [];
+    if (storageGet(STORAGE.LOG + id)) return;
+    const arr = storageGet(k) || [];
     const sesiones = arr.map((r) => ({ fecha: r.fecha, series: [{ peso: r.peso, reps: r.reps }] }));
     if (sesiones.length) setSesiones(id, sesiones);
   });
-  localStorage.setItem("mig-migrado-v2", "1");
+  storageSet(STORAGE.MIGRADO, "1");
+}
+
+// ---------- Exportación / Importación de datos ----------
+function exportarDatos() {
+  const claves = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && (k.startsWith(STORAGE.LOG) || k === STORAGE.PESO_CORP || k.startsWith(STORAGE.HABITOS) || k === STORAGE.MIGRADO)) {
+      claves.push(k);
+    }
+  }
+  const datos = { _meta: { version: 2, exportado: hoyISO() } };
+  claves.forEach((k) => { datos[k] = storageGet(k); });
+
+  const blob = new Blob([JSON.stringify(datos, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `mi-gym-${hoyISO()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importarDatos(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const datos = JSON.parse(e.target.result);
+      if (!datos._meta || !datos._meta.version) {
+        alert("El archivo no parece un backup válido de Mi Gym.");
+        return;
+      }
+      if (!confirm("Se sobrescribirán los datos actuales. ¿Continuar?")) return;
+
+      Object.keys(datos).forEach((k) => {
+        if (k.startsWith("_")) return;
+        storageSet(k, datos[k]);
+      });
+      renderInicio();
+    } catch {
+      alert("Error al leer el archivo. Comprueba que es un backup válido.");
+    }
+  };
+  reader.readAsText(file);
+}
+
+function clickImportar() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.style.display = "none";
+  input.addEventListener("change", () => {
+    if (input.files[0]) importarDatos(input.files[0]);
+    input.remove();
+  });
+  document.body.appendChild(input);
+  input.click();
 }
 
 // ---------- Utilidades ----------
@@ -168,7 +250,8 @@ function iniciarDescanso(segundos) {
 }
 function cerrarDescanso() {
   clearInterval(tempInterval);
-  document.getElementById("descanso-banner").classList.remove("visible");
+  const banner = document.getElementById("descanso-banner");
+  if (banner) banner.classList.remove("visible");
 }
 
 // ---------- Días entrenados, racha y fase ----------
@@ -188,8 +271,8 @@ function getDiasEntrenados() {
   const fechas = new Set();
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k && k.startsWith(LOG)) {
-      const sesiones = JSON.parse(localStorage.getItem(k)) || [];
+    if (k && k.startsWith(STORAGE.LOG)) {
+      const sesiones = storageGet(k) || [];
       sesiones.forEach((s) => { if (s.fecha) fechas.add(s.fecha); });
     }
   }
@@ -227,6 +310,8 @@ function siguienteFaseNombre(faseId) {
 
 // ---------- Pantalla de inicio ----------
 function renderInicio() {
+  cerrarDescanso();
+
   const total = getDiasEntrenados().length;
   const racha = getRachaSemanas();
   const semana = getDiasEstaSemana();
@@ -256,6 +341,12 @@ function renderInicio() {
         <h1>Mi Gym</h1>
         <p class="sub">Elige el entrenamiento de hoy</p>
       </div>
+      <button class="btn-icon" id="btn-importar" title="Importar datos">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </button>
+      <button class="btn-icon" id="btn-exportar" title="Exportar datos">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
       <button class="btn-progreso" id="btn-progreso">Progreso</button>
     </header>
     <div class="panel">
@@ -281,6 +372,8 @@ function renderInicio() {
 
   app.innerHTML = html;
   document.getElementById("btn-progreso").addEventListener("click", renderProgreso);
+  document.getElementById("btn-exportar").addEventListener("click", exportarDatos);
+  document.getElementById("btn-importar").addEventListener("click", clickImportar);
   document.querySelectorAll(".dia-card").forEach((card) => {
     card.addEventListener("click", () => renderDia(card.dataset.dia));
   });
@@ -296,6 +389,8 @@ function renderInicio() {
 
 // ---------- Pantalla de un día ----------
 function renderDia(diaId) {
+  cerrarDescanso();
+
   const dia = RUTINAS.find((d) => d.id === diaId);
   if (!dia) return renderInicio();
 
@@ -389,10 +484,8 @@ function renderDia(diaId) {
 }
 
 // ---------- Peso corporal ----------
-const PESO_CORP = "mig-peso-corporal";
 function getPesoCorporal() {
-  const d = localStorage.getItem(PESO_CORP);
-  return d ? JSON.parse(d) : [];
+  return storageGet(STORAGE.PESO_CORP) || [];
 }
 function guardarPesoCorporal(peso) {
   const arr = getPesoCorporal();
@@ -400,7 +493,7 @@ function guardarPesoCorporal(peso) {
   if (idx >= 0) arr[idx].peso = peso;
   else arr.push({ fecha: hoy, peso });
   arr.sort((a, b) => a.fecha.localeCompare(b.fecha));
-  localStorage.setItem(PESO_CORP, JSON.stringify(arr));
+  storageSet(STORAGE.PESO_CORP, arr);
 }
 
 // ---------- Datos de progreso por ejercicio ----------
@@ -457,6 +550,8 @@ function graficaSVG(puntos, unidad) {
 
 // ---------- Pantalla de progreso ----------
 function renderProgreso() {
+  cerrarDescanso();
+
   const pesos = getPesoCorporal();
   const ultimo = pesos.length ? pesos[pesos.length - 1] : null;
 
@@ -510,17 +605,15 @@ function renderProgreso() {
 }
 
 // ---------- Constancia diaria (hábitos) ----------
-const HAB = "mig-habitos-";
 function getHabitosDia(fecha) {
-  const d = localStorage.getItem(HAB + fecha);
-  return d ? JSON.parse(d) : [];
+  return storageGet(STORAGE.HABITOS + fecha) || [];
 }
 function toggleHabito(fecha, habitoId) {
   const marcados = getHabitosDia(fecha);
   const i = marcados.indexOf(habitoId);
   if (i >= 0) marcados.splice(i, 1);
   else marcados.push(habitoId);
-  localStorage.setItem(HAB + fecha, JSON.stringify(marcados));
+  storageSet(STORAGE.HABITOS + fecha, marcados);
 }
 function rachaHabitos() {
   if (!HABITOS.length) return 0;
