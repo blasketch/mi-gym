@@ -308,6 +308,16 @@ function siguienteFaseNombre(faseId) {
   return idx >= 0 && idx < FASES.length - 1 ? FASES[idx + 1].nombre : null;
 }
 
+function ejercicioEmoji(nombre) {
+  const n = nombre.toLowerCase();
+  if (n.includes('curl') || n.includes('extensión') || n.includes('elevación') || n.includes('face pull') || n.includes('laterales') || n.includes('martillo')) return '🔥';
+  if (n.includes('plancha') || n.includes('piernas') || n.includes('rueda')) return '⚡';
+  if (n.includes('sentadilla') || n.includes('press') || n.includes('peso muerto') || n.includes('remo') || n.includes('dominadas') || n.includes('hip thrust') || n.includes('jalón') || n.includes('prensa') || n.includes('fondos') || n.includes('banca')) return '🏋️';
+  if (n.includes('cardio') || n.includes('pasos')) return '🚶';
+  return '💪';
+}
+function diaEmoji(id) { return id.startsWith('inf') ? '🦵' : '💪'; }
+
 // ---------- Pantalla de inicio ----------
 function renderInicio() {
   cerrarDescanso();
@@ -337,6 +347,7 @@ function renderInicio() {
 
   let html = `
     <header class="cabecera">
+      <div class="cabecera-logo">🏋️</div>
       <div>
         <h1>Mi Gym</h1>
         <p class="sub">Elige el entrenamiento de hoy</p>
@@ -349,7 +360,7 @@ function renderInicio() {
       </button>
       <button class="btn-progreso" id="btn-progreso">Progreso</button>
     </header>
-    <div class="panel">
+    <div class="panel fade-in">
       <div class="stats">
         <div class="stat"><div class="stat-num">${total}</div><div class="stat-lbl">días entrenados</div></div>
         <div class="stat"><div class="stat-num">${racha}</div><div class="stat-lbl">sem. seguidas</div></div>
@@ -360,10 +371,10 @@ function renderInicio() {
     ${htmlConstancia()}
   `;
 
-  RUTINAS.forEach((dia) => {
+  RUTINAS.forEach((dia, i) => {
     html += `
-      <button class="dia-card" data-dia="${dia.id}">
-        <div class="nombre">${dia.nombre}</div>
+      <button class="dia-card fade-in-d${(i % 4) + 1}" data-dia="${dia.id}">
+        <div class="nombre">${diaEmoji(dia.id)} ${dia.nombre}</div>
         <div class="enfoque">${dia.enfoque}</div>
         <div class="cuenta">${dia.ejercicios.length} ejercicios</div>
       </button>
@@ -407,7 +418,7 @@ function renderDia(diaId) {
     </header>
   `;
 
-  dia.ejercicios.forEach((ej) => {
+  dia.ejercicios.forEach((ej, ejIdx) => {
     const series = Math.max(2, ej.series + mod.dSeries);
     const reps = ajustarReps(ej.reps, mod.dReps);
     const top = topReps(reps);
@@ -439,8 +450,8 @@ function renderDia(diaId) {
     }
 
     html += `
-      <div class="ejercicio">
-        <div class="titulo">${ej.nombre}</div>
+      <div class="ejercicio" style="animation-delay:${ejIdx * 0.06}s">
+        <div class="titulo">${ejercicioEmoji(ej.nombre)} ${ej.nombre}</div>
         <div class="prescripcion">${series} series × ${reps} reps · descanso ${ej.descanso}</div>
         ${nota}
         ${sugHTML}
@@ -537,14 +548,28 @@ function graficaSVG(puntos, unidad) {
   if (min === max) { min -= 1; max += 1; }
   const x = (i) => pad + (i / (puntos.length - 1)) * (W - pad * 2);
   const y = (v) => H - pad - ((v - min) / (max - min)) * (H - pad * 2);
-  const linea = puntos.map((p, i) => `${x(i).toFixed(1)},${y(p.valor).toFixed(1)}`).join(" ");
-  const dots = puntos.map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.valor).toFixed(1)}" r="3" fill="var(--accent)"/>`).join("");
+  const pts = puntos.map((p, i) => `${x(i).toFixed(1)},${y(p.valor).toFixed(1)}`);
+  const linea = pts.join(" ");
+  const area = pts.join(" ") + ` ${x(puntos.length - 1).toFixed(1)},${H - pad} ${x(0).toFixed(1)},${H - pad}`;
+  const dots = puntos.map((p, i) =>
+    `<circle cx="${x(i).toFixed(1)}" cy="${y(p.valor).toFixed(1)}" r="4" fill="#f97316" stroke="#0a0a0f" stroke-width="2"/>
+     <circle cx="${x(i).toFixed(1)}" cy="${y(p.valor).toFixed(1)}" r="7" fill="none" stroke="#f97316" stroke-opacity="0.2"/>`
+  ).join("");
   return `
     <svg viewBox="0 0 ${W} ${H}" class="grafica">
-      <polyline points="${linea}" fill="none" stroke="var(--accent)" stroke-width="2"/>
+      <defs>
+        <linearGradient id="area-grad-${puntos.length}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f97316" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#f97316" stop-opacity="0.02"/>
+        </linearGradient>
+      </defs>
+      <line x1="${pad}" y1="${pad}" x2="${W - pad}" y2="${pad}" stroke="#1e1e2e" stroke-width="1"/>
+      <line x1="${pad}" y1="${pad + (H - pad * 2) / 2}" x2="${W - pad}" y2="${pad + (H - pad * 2) / 2}" stroke="#1e1e2e" stroke-width="1"/>
+      <polygon points="${area}" fill="url(#area-grad-${puntos.length})"/>
+      <polyline points="${linea}" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linejoin="round"/>
       ${dots}
-      <text x="${pad}" y="12" fill="var(--muted)" font-size="11">${max} ${unidad}</text>
-      <text x="${pad}" y="${H - 4}" fill="var(--muted)" font-size="11">${min} ${unidad}</text>
+      <text x="${pad}" y="12" fill="#94a3b8" font-size="10" font-weight="600">${max}</text>
+      <text x="${pad}" y="${H - 4}" fill="#94a3b8" font-size="10" font-weight="600">${min}</text>
     </svg>`;
 }
 
