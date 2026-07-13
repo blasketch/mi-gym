@@ -1,3 +1,52 @@
 .DS_Store
 Thumbs.db
 *.log
+
+# Node / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+
+# Vite / build
+dist/
+dist-ssr/
+.vite/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Capacitor
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/capacitor-cordova-android-plugins/
+android/app/release/
+android/.idea/
+android/*.iml
+android/app/*.iml
+*.keystore
+*.jks
+
+# iOS (por si en el futuro)
+ios/Pods/
+ios/build/
+ios/App/Pods/
+ios/App/build/
+ios/App/Assets.xcassets/LaunchImage.imageset/
+*.xcuserstate
+
+# Entorno
+.env
+.env.local
+.env.*.local
+
+# Backups temporales
+*.bak
+*.tmp

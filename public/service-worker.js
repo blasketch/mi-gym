@@ -1,17 +1,10 @@
-const CACHE = "mi-gym-v2";
-const ARCHIVOS = [
-  "./",
-  "./index.html",
-  "./css/estilos.css",
-  "./js/rutinas.js",
-  "./js/app.js",
-  "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png"
-];
+// Mi Gym - Service Worker
+// Estrategia: "stale-while-revalidate" en runtime para todo lo que sea GET.
+// El SW se registra automáticamente desde main.js en producción (build).
+
+const CACHE = "mi-gym-v3";
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARCHIVOS)));
   self.skipWaiting();
 });
 
@@ -31,7 +24,9 @@ self.addEventListener("fetch", (e) => {
     fetch(e.request)
       .then((resp) => {
         const copia = resp.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copia));
+        if (resp.ok) {
+          caches.open(CACHE).then((c) => c.put(e.request, copia));
+        }
         return resp;
       })
       .catch(() => caches.match(e.request))
