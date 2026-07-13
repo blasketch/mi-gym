@@ -3,7 +3,7 @@
 import { RUTINAS } from "../data/rutinas.js";
 import { fechaCorta } from "../lib/fechas.js";
 import { cerrarDescanso } from "../lib/temporizador.js";
-import { graficaSVG } from "../lib/grafica.js";
+import { graficaHTML, montarGraficas } from "../lib/grafica.js";
 import { puntosEjercicio, prEjercicio, getPesoCorporal, guardarPesoCorporal } from "../lib/progreso.js";
 
 import { renderInicio } from "./inicio.js";
@@ -28,7 +28,7 @@ export function renderProgreso(app) {
         <input type="number" inputmode="decimal" placeholder="kg" id="in-peso-corp">
         <button class="guardar" id="btn-peso-corp">Guardar</button>
       </div>
-      ${graficaSVG(pesos.map((p) => ({ fecha: p.fecha, valor: p.peso })), "kg")}
+      ${graficaHTML(pesos.map((p) => ({ fecha: p.fecha, valor: p.peso })), "kg")}
     </div>
   `;
 
@@ -45,7 +45,7 @@ export function renderProgreso(app) {
         <div class="ejercicio">
           <div class="titulo">${ej.nombre}</div>
           <div class="pr">${prTxt}</div>
-          ${graficaSVG(puntos, unidad)}
+          ${graficaHTML(puntos, unidad)}
         </div>
       `;
     });
@@ -54,6 +54,7 @@ export function renderProgreso(app) {
   html += lista || `<p class="sub" style="text-align:center; margin-top:24px">Aún no has registrado ejercicios. Entrena y tu progreso aparecerá aquí.</p>`;
 
   app.innerHTML = html;
+  montarGraficas(app);
 
   document.getElementById("btn-volver").addEventListener("click", () => { mostrarTabbar(); renderInicio(app); });
   document.getElementById("btn-peso-corp").addEventListener("click", () => {

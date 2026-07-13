@@ -5,6 +5,7 @@ import { HABITOS } from "../data/habitos.js";
 import { FASES, MODIFICADORES } from "../data/rutinas.js";
 import { exportarDatos, clickImportar } from "../lib/export-import.js";
 import { ocultarDescanso } from "../lib/temporizador.js";
+import { refrescarGraficas } from "../lib/grafica.js";
 
 import { crearTabbar } from "../components/tabbar.js";
 import { renderInicio } from "./inicio.js";
@@ -147,6 +148,7 @@ export function renderAjustes(app) {
       storageSet(STORAGE.TEMA, t);
       aplicarTema(t);
       document.querySelectorAll(".tema-btn").forEach((b) => b.classList.toggle("on", b.dataset.tema === t));
+      refrescarGraficas();
     });
   });
 

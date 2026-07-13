@@ -74,3 +74,13 @@ body::before {
 .fade-in-d2 { animation: fadeInUp 0.4s ease 0.10s forwards; opacity: 0; }
 .fade-in-d3 { animation: fadeInUp 0.4s ease 0.15s forwards; opacity: 0; }
 .fade-in-d4 { animation: fadeInUp 0.4s ease 0.20s forwards; opacity: 0; }
+
+/* Utilidades */
+.muted { color: var(--muted); }
+.centrado { text-align: center; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.tabular { font-variant-numeric: tabular-nums; }

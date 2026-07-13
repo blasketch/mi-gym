@@ -1,0 +1,240 @@
+/* ==================================================================
+   POLISH - Rediseño visual pro: glassmorphism, transiciones,
+   microinteracciones, skeletons.
+   ================================================================== */
+
+/* ---------- GLASSMORPHISM en paneles y tarjetas ---------- */
+.panel,
+.ajuste-card,
+.historial-dia,
+.ejercicio,
+#tabbar {
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+/* En claro: la mezcla es diferente, lo hacemos explícito */
+:root[data-tema="claro"] .panel,
+:root[data-tema="claro"] .ajuste-card,
+:root[data-tema="claro"] .historial-dia,
+:root[data-tema="claro"] .ejercicio {
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text) 5%, transparent);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-tema]) .panel,
+  :root:not([data-tema]) .ajuste-card,
+  :root:not([data-tema]) .historial-dia,
+  :root:not([data-tema]) .ejercicio {
+    background: color-mix(in srgb, var(--surface) 85%, transparent);
+    border: 1px solid color-mix(in srgb, var(--text) 5%, transparent);
+  }
+}
+
+/* ---------- TRANSICIONES DE VISTA ---------- */
+@keyframes viewIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes viewOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-4px); }
+}
+
+#app {
+  animation: viewIn 0.36s var(--ease-out);
+}
+
+/* Para que la cabecera se sienta como una unidad */
+.cabecera h1 {
+  letter-spacing: 1.8px;
+  text-shadow: 0 0 32px rgba(249, 115, 22, 0.25);
+}
+
+/* ---------- HOVER Y ELEVACIÓN EN TARJETAS ---------- */
+.ejercicio,
+.historial-dia,
+.ajuste-card {
+  transition: transform var(--t-base) var(--ease-out),
+              border-color var(--t-base) var(--ease-out),
+              box-shadow var(--t-base) var(--ease-out);
+}
+.historial-dia:hover,
+.ejercicio:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- STATS con efecto sutil ---------- */
+.stat {
+  transition: transform var(--t-base) var(--ease-out),
+              border-color var(--t-base) var(--ease-out);
+}
+.stat:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  transform: translateY(-1px);
+}
+.stat-num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 24px rgba(249, 115, 22, 0.18);
+}
+
+/* ---------- BOTONES PRIMARIOS con elevación ---------- */
+.btn-progreso,
+.registro .guardar,
+.terminar,
+.ajuste-btn.primario {
+  position: relative;
+  background: var(--gradient);
+  box-shadow: var(--shadow-accent);
+  transition: transform var(--t-fast) var(--ease-out),
+              box-shadow var(--t-base) var(--ease-out),
+              filter var(--t-fast) var(--ease-out);
+}
+.btn-progreso:hover,
+.terminar:hover,
+.registro .guardar:hover,
+.ajuste-btn.primario:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 32px rgba(249, 115, 22, 0.35);
+  filter: brightness(1.05);
+}
+.btn-progreso:active,
+.terminar:active,
+.registro .guardar:active,
+.ajuste-btn.primario:active {
+  transform: translateY(0);
+  filter: brightness(0.98);
+}
+
+/* ---------- HÁBITOS con estado activo más vivo ---------- */
+.habito {
+  transition: transform var(--t-fast) var(--ease-spring),
+              background var(--t-base) var(--ease-out),
+              box-shadow var(--t-base) var(--ease-out);
+}
+.habito.on {
+  background: var(--gradient);
+  box-shadow: 0 4px 18px rgba(249, 115, 22, 0.35);
+}
+
+/* ---------- INPUTS con focus refinado ---------- */
+input[type="number"] {
+  font-variant-numeric: tabular-nums;
+}
+input[type="number"]:focus {
+  transform: scale(1.01);
+}
+
+/* ---------- BARRA DE PROGRESO con easing suave ---------- */
+.barra-fill,
+.habito-metrica-fill {
+  transition: width 0.7s var(--ease-out);
+}
+
+/* ---------- CHECK (serie hecha) con microanimación ---------- */
+.serie-row {
+  border-radius: var(--r-sm);
+  padding: 2px;
+  margin: -2px 0;
+  transition: background var(--t-base) var(--ease-out);
+}
+.serie-row.hecha {
+  background: color-mix(in srgb, var(--accent2) 6%, transparent);
+}
+
+/* ---------- BANNER DESCANSO con glass y animación de entrada ---------- */
+#descanso-banner {
+  background: var(--gradient);
+  box-shadow: 0 16px 40px rgba(249, 115, 22, 0.4), var(--shadow-lg);
+  backdrop-filter: blur(8px);
+}
+#descanso-banner.fin {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 16px 40px rgba(34, 197, 94, 0.4), var(--shadow-lg);
+}
+
+/* ---------- DÍA CARD con hover más generoso ---------- */
+.dia-card {
+  background: var(--surface);
+  transition: transform var(--t-base) var(--ease-out),
+              border-color var(--t-base) var(--ease-out),
+              box-shadow var(--t-base) var(--ease-out),
+              background var(--t-base) var(--ease-out);
+}
+.dia-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  box-shadow: 0 12px 32px rgba(249, 115, 22, 0.12);
+}
+
+/* ---------- SKELETON (loading) ---------- */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 0%,
+    var(--surface-3) 50%,
+    var(--surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: var(--r-sm);
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---------- GRAFICA (Chart.js) wrapper ---------- */
+.grafica-wrap {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  margin-top: var(--sp-3);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  border-radius: var(--r-sm);
+  padding: var(--sp-3) var(--sp-2) var(--sp-2);
+  border: 1px solid color-mix(in srgb, var(--text) 4%, transparent);
+}
+.grafica-wrap canvas { width: 100% !important; height: 100% !important; }
+.grafica-vacia {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  margin-top: var(--sp-3);
+  text-align: center;
+  font-style: italic;
+  padding: var(--sp-5);
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  border-radius: var(--r-sm);
+  border: 1px dashed color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+/* ---------- OCULTAR flechas en inputs number (cross-browser) ---------- */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* ---------- ACCESSIBILITY: focus visible mejorado ---------- */
+button:focus-visible,
+input:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- REDUCED MOTION ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
