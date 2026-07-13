@@ -9,6 +9,7 @@ import { iniciarDescanso, cerrarDescanso } from "../lib/temporizador.js";
 import { ejercicioEmoji } from "../lib/emojis.js";
 
 import { renderInicio } from "./inicio.js";
+import { ocultarTabbar, mostrarTabbar } from "../components/tabbar.js";
 
 export function resumenSesion(dia) {
   let seriesHechas = 0, volumen = 0;
@@ -70,6 +71,7 @@ function mostrarResumen(app, dia) {
 
 export function renderDia(app, diaId) {
   cerrarDescanso();
+  ocultarTabbar();
 
   const dia = RUTINAS.find((d) => d.id === diaId);
   if (!dia) return renderInicio(app);
@@ -134,7 +136,7 @@ export function renderDia(app, diaId) {
 
   app.innerHTML = html;
 
-  document.getElementById("btn-volver").addEventListener("click", () => renderInicio(app));
+  document.getElementById("btn-volver").addEventListener("click", () => { mostrarTabbar(); renderInicio(app); });
   document.getElementById("btn-terminar").addEventListener("click", () => mostrarResumen(app, dia));
 
   document.querySelectorAll(".check").forEach((btn) => {

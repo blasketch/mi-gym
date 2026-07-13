@@ -1,0 +1,339 @@
+/* ========== TABBAR INFERIOR ========== */
+#tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  background: rgba(20, 20, 30, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--surface-2);
+  padding: 6px 8px calc(env(safe-area-inset-bottom, 0px) + 6px);
+  transition: transform 0.25s ease;
+}
+#tabbar.oculta { transform: translateY(110%); }
+
+#tabbar .tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 6px 4px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+#tabbar .tab svg { display: block; }
+#tabbar .tab.activa {
+  color: var(--accent);
+  background: rgba(249, 115, 22, 0.08);
+}
+#tabbar .tab:active { transform: scale(0.96); }
+#tabbar .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.tabbar-spacer { height: 72px; }
+
+/* ========== HÁBITOS CON OBJETIVO (MÉTRICAS) ========== */
+.habitos-metricas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+.habito-metrica {
+  background: var(--bg);
+  border: 1px solid var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.habito-metrica-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.habito-metrica-nombre { font-size: 14px; font-weight: 600; }
+.habito-metrica-fraccion {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.habito-metrica-fraccion input {
+  width: 72px;
+  background: var(--surface);
+  border: 1px solid var(--surface-2);
+  border-radius: 8px;
+  padding: 6px 8px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: right;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.2s ease;
+}
+.habito-metrica-fraccion input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+.habito-metrica-de { font-size: 12px; }
+.habito-metrica-barra {
+  position: relative;
+  height: 8px;
+  background: var(--surface-2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.habito-metrica-fill {
+  height: 100%;
+  background: var(--gradient);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+.habito-metrica-pct {
+  position: absolute;
+  right: 0;
+  top: -18px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ========== VISTA AJUSTES ========== */
+.ajuste-grupo { margin-bottom: 18px; }
+.ajuste-titulo {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+  margin: 0 4px 8px;
+}
+.ajuste-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-2);
+  border-radius: var(--radius);
+  padding: 4px 14px;
+}
+.ajuste-card.ajuste-fila-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+.ajuste-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--surface-2);
+  gap: 12px;
+}
+.ajuste-fila:last-child { border-bottom: none; }
+.ajuste-label { font-size: 14px; }
+.ajuste-valor { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.ajuste-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+.ajuste-btn:hover { border-color: var(--surface-3); background: var(--surface-2); }
+.ajuste-btn:active { transform: scale(0.98); }
+.ajuste-btn.primario {
+  background: var(--gradient);
+  color: #fff;
+  border: none;
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.2);
+}
+.ajuste-btn.primario:hover { filter: brightness(1.1); }
+.ajuste-btn.peligro { color: #ef4444; }
+.ajuste-btn.peligro:hover { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.4); }
+
+.tema-opciones {
+  display: flex;
+  gap: 8px;
+  padding: 12px 0;
+}
+.tema-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg);
+  color: var(--muted);
+  border: 1px solid var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 10px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tema-btn .tema-ico { font-size: 20px; }
+.tema-btn:hover { color: var(--text); border-color: var(--surface-3); }
+.tema-btn.on {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(249, 115, 22, 0.08);
+}
+
+/* ========== VISTA HISTORIAL ========== */
+.historial-dia {
+  background: var(--surface);
+  border: 1px solid var(--surface-2);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.historial-dia > summary {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+  gap: 8px;
+  transition: background 0.2s ease;
+}
+.historial-dia > summary::-webkit-details-marker { display: none; }
+.historial-dia > summary:hover { background: var(--surface-2); }
+.historial-fecha {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 1px;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.historial-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.historial-ejercicios {
+  border-top: 1px solid var(--surface-2);
+  padding: 4px 0;
+}
+.historial-ej {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--surface-2);
+}
+.historial-ej:last-child { border-bottom: none; }
+.historial-ej-titulo { font-size: 14px; font-weight: 600; }
+.historial-ej-series { font-size: 13px; color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.historial-ej-series .muted { font-style: italic; }
+
+/* ========== TEMA CLARO ========== */
+:root[data-tema="claro"] {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --surface-2: #ececf0;
+  --surface-3: #d8d8df;
+  --text: #1a1a1f;
+  --muted: #6b7280;
+  --accent: #ea580c;
+  --accent-dark: #c2410c;
+  --accent2: #16a34a;
+  --accent2-dark: #15803d;
+  --gradient: linear-gradient(135deg, #f97316, #ef4444);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+:root[data-tema="claro"] body::before {
+  background-image:
+    linear-gradient(45deg, transparent 48%, rgba(234, 88, 12, 0.04) 50%, transparent 52%),
+    linear-gradient(-45deg, transparent 48%, rgba(234, 88, 12, 0.04) 50%, transparent 52%);
+}
+:root[data-tema="claro"] #tabbar {
+  background: rgba(255, 255, 255, 0.9);
+  border-top-color: var(--surface-2);
+}
+:root[data-tema="claro"] .stat,
+:root[data-tema="claro"] .barra,
+:root[data-tema="claro"] .habito,
+:root[data-tema="claro"] .habito-metrica,
+:root[data-tema="claro"] .ajuste-btn,
+:root[data-tema="claro"] .tema-btn {
+  background: var(--surface-2);
+}
+:root[data-tema="claro"] input[type="number"] {
+  background: var(--surface-2);
+  color: var(--text);
+}
+:root[data-tema="claro"] .serie-row input,
+:root[data-tema="claro"] .registro input {
+  background: var(--surface-2);
+}
+
+/* Auto: si el sistema prefiere claro, aplicar.
+   Se aplica en root sin atributo. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-tema]) {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface-2: #ececf0;
+    --surface-3: #d8d8df;
+    --text: #1a1a1f;
+    --muted: #6b7280;
+    --accent: #ea580c;
+    --accent-dark: #c2410c;
+    --accent2: #16a34a;
+    --accent2-dark: #15803d;
+    --gradient: linear-gradient(135deg, #f97316, #ef4444);
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+  }
+  :root:not([data-tema]) body::before {
+    background-image:
+      linear-gradient(45deg, transparent 48%, rgba(234, 88, 12, 0.04) 50%, transparent 52%),
+      linear-gradient(-45deg, transparent 48%, rgba(234, 88, 12, 0.04) 50%, transparent 52%);
+  }
+  :root:not([data-tema]) #tabbar {
+    background: rgba(255, 255, 255, 0.9);
+    border-top-color: var(--surface-2);
+  }
+  :root:not([data-tema]) .stat,
+  :root:not([data-tema]) .barra,
+  :root:not([data-tema]) .habito,
+  :root:not([data-tema]) .habito-metrica,
+  :root:not([data-tema]) .ajuste-btn,
+  :root:not([data-tema]) .tema-btn {
+    background: var(--surface-2);
+  }
+  :root:not([data-tema]) input[type="number"] {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+  :root:not([data-tema]) .serie-row input,
+  :root:not([data-tema]) .registro input {
+    background: var(--surface-2);
+  }
+}

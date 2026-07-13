@@ -7,6 +7,8 @@ export const STORAGE = {
   LOG: "mig-log-",
   PESO_CORP: "mig-peso-corporal",
   HABITOS: "mig-habitos-",
+  HABITO_VALOR: "mig-habito-valor-",
+  TEMA: "mig-tema",
   MIGRADO: "mig-migrado-v2",
 };
 
@@ -26,6 +28,11 @@ export function storageSet(key, value) {
   } catch {
     return false;
   }
+}
+
+export function storageDel(key) {
+  try { localStorage.removeItem(key); return true; }
+  catch { return false; }
 }
 
 // ---------- Sesiones por ejercicio ----------
@@ -63,6 +70,15 @@ export function borrarSet(ejId, indice) {
   if (idx === -1) return;
   sesiones[idx].series.splice(indice, 1);
   if (sesiones[idx].series.length === 0) sesiones.splice(idx, 1);
+  setSesiones(ejId, sesiones);
+}
+
+// Borra la sesión completa de un ejercicio en una fecha dada.
+export function borrarSesionFecha(ejId, fecha) {
+  const sesiones = getSesiones(ejId);
+  const idx = sesiones.findIndex((s) => s.fecha === fecha);
+  if (idx === -1) return;
+  sesiones.splice(idx, 1);
   setSesiones(ejId, sesiones);
 }
 

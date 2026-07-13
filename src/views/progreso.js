@@ -7,9 +7,11 @@ import { graficaSVG } from "../lib/grafica.js";
 import { puntosEjercicio, prEjercicio, getPesoCorporal, guardarPesoCorporal } from "../lib/progreso.js";
 
 import { renderInicio } from "./inicio.js";
+import { ocultarTabbar, mostrarTabbar } from "../components/tabbar.js";
 
 export function renderProgreso(app) {
   cerrarDescanso();
+  ocultarTabbar();
 
   const pesos = getPesoCorporal();
   const ultimo = pesos.length ? pesos[pesos.length - 1] : null;
@@ -53,7 +55,7 @@ export function renderProgreso(app) {
 
   app.innerHTML = html;
 
-  document.getElementById("btn-volver").addEventListener("click", () => renderInicio(app));
+  document.getElementById("btn-volver").addEventListener("click", () => { mostrarTabbar(); renderInicio(app); });
   document.getElementById("btn-peso-corp").addEventListener("click", () => {
     const input = document.getElementById("in-peso-corp");
     const peso = parseFloat(input.value);
