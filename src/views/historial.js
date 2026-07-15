@@ -4,7 +4,8 @@ import { RUTINAS } from "../data/rutinas.js";
 import { fechaCorta, getDiasEntrenados } from "../lib/fechas.js";
 import { getSesiones, borrarSesionFecha } from "../lib/storage.js";
 import { ocultarDescanso } from "../lib/temporizador.js";
-import { ejercicioEmoji } from "../lib/emojis.js";
+import { icono } from "../components/icons.js";
+import { haptic } from "../lib/haptics.js";
 
 import { crearTabbar } from "../components/tabbar.js";
 import { renderInicio } from "./inicio.js";
@@ -19,13 +20,20 @@ function totalSeries(sesion) {
   return sesion.series.filter(Boolean).length;
 }
 
+function ejercicioIcono(nombre) {
+  const n = nombre.toLowerCase();
+  if (n.includes('curl') || n.includes('extensión') || n.includes('elevación') || n.includes('face pull') || n.includes('laterales') || n.includes('martillo')) return 'llama';
+  if (n.includes('plancha') || n.includes('piernas') || n.includes('rueda')) return 'foco';
+  if (n.includes('sentadilla') || n.includes('press') || n.includes('peso muerto') || n.includes('remo') || n.includes('dominadas') || n.includes('hip thrust') || n.includes('jalón') || n.includes('prensa') || n.includes('fondos') || n.includes('banca')) return 'pesa';
+  if (n.includes('cardio') || n.includes('pasos')) return 'pasos';
+  return 'brazo';
+}
+
 export function renderHistorial(app) {
   ocultarDescanso();
 
-  const dias = getDiasEntrenados().slice().reverse(); // más reciente primero
+  const dias = getDiasEntrenados().slice().reverse();
 
-  // Para cada día, sabemos qué ejercicios se entrenaron porque tienen sesión.
-  // El nombre del ejercicio lo obtenemos de RUTINAS.
   const mapaEj = {};
   RUTINAS.forEach((d) => d.ejercicios.forEach((e) => { mapaEj[e.id] = { nombre: e.nombre, diaNombre: d.nombre }; }));
 
@@ -38,7 +46,11 @@ export function renderHistorial(app) {
     </header>
 
     ${dias.length === 0
-      ? `<div class="panel"><p class="sub" style="text-align:center; margin:8px 0">Aún no has registrado entrenamientos.</p></div>`
+      ? `<div class="vacio">
+          <div class="vacio-illo">${icono("calendario", 64)}</div>
+          <h3>Tu historial está vacío</h3>
+          <p>Aquí verás cada día que entrenes: ejercicios, series y pesos. Vuelve después de tu próxima sesión.</p>
+        </div>`
       : dias.map((fecha) => {
           const ejerciciosDelDia = [];
           RUTINAS.forEach((dia) => {
@@ -57,14 +69,12 @@ export function renderHistorial(app) {
                   <div class="historial-fecha">${fechaCorta(fecha)}</div>
                   <div class="historial-meta">${ejerciciosDelDia.length} ejercicios · ${totalSets} series</div>
                 </div>
-                <button class="btn-icon btn-borrar-dia" data-fecha="${fecha}" title="Borrar este día" aria-label="Borrar día">
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
-                </button>
+                <button class="btn-icon btn-borrar-dia" data-fecha="${fecha}" title="Borrar este día" aria-label="Borrar día">${icono("papelera", 18)}</button>
               </summary>
               <div class="historial-ejercicios">
                 ${ejerciciosDelDia.map(({ ej, sesion }) => `
                   <div class="historial-ej">
-                    <div class="historial-ej-titulo">${ejercicioEmoji(ej.nombre)} ${ej.nombre}</div>
+                    <div class="historial-ej-titulo">${icono(ejercicioIcono(ej.nombre), 16)} <span>${ej.nombre}</span></div>
                     <div class="historial-ej-series">${resumenEjercicio(sesion) || "<span class='muted'>sin series</span>"}</div>
                   </div>
                 `).join("")}
@@ -89,6 +99,7 @@ export function renderHistorial(app) {
       ev.stopPropagation();
       const fecha = btn.dataset.fecha;
       if (!confirm(`¿Borrar el entrenamiento del ${fechaCorta(fecha)}?`)) return;
+      haptic("warning");
       RUTINAS.forEach((d) => d.ejercicios.forEach((ej) => borrarSesionFecha(ej.id, fecha)));
       renderHistorial(app);
     });

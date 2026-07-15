@@ -121,9 +121,7 @@
 }
 #descanso-banner.visible { transform: translateX(-50%) translateY(0); }
 #descanso-banner.fin { background: var(--accent2); }
-#descanso-banner span { display: flex; align-items: center; gap: 8px; }
-#descanso-banner span::before { content: '⏱️'; font-size: 18px; }
-#descanso-banner.fin span::before { content: '✅'; }
+#descanso-banner > span { display: flex; align-items: center; gap: 8px; }
 #descanso-banner button {
   background: rgba(255,255,255,0.18);
   color: #fff;

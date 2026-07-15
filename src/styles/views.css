@@ -121,7 +121,7 @@
   align-items: center;
   gap: 6px;
 }
-.sugerencia::before { content: '⬆️'; font-size: 13px; }
+.sugerencia .icono { color: var(--accent); }
 
 /* ========== CONSTANCIA DIARIA ========== */
 .constancia-top {
@@ -140,7 +140,7 @@
   align-items: center;
   gap: 4px;
 }
-.constancia-top .racha-hab::before { content: '🔥'; font-size: 14px; }
+.constancia-top .racha-hab .icono { color: var(--accent); }
 .habitos { display: flex; flex-wrap: wrap; gap: 8px; }
 .habito {
   background: var(--bg);
@@ -187,7 +187,7 @@
   align-items: center;
   gap: 6px;
 }
-.ejercicio .nota::before { content: '💡'; }
+.ejercicio .nota .icono { color: var(--accent); }
 .ejercicio .ultimo { font-size: 13px; color: var(--muted); margin-top: 10px; }
 .ejercicio .ultimo strong { color: var(--text); }
 
@@ -326,7 +326,7 @@
   align-items: center;
   gap: 4px;
 }
-.pr::before { content: '🏆'; font-size: 14px; }
+.pr .icono { color: var(--accent2); }
 
 .grafica {
   width: 100%;
@@ -367,3 +367,43 @@
   text-align: center;
 }
 .pr-item { font-size: 14px; color: var(--text); padding: 2px 0; text-align: center; font-weight: 600; }
+
+/* ========== ESTADOS VACÍOS ========== */
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--sp-12) var(--sp-5);
+  background: var(--surface);
+  border: 1px dashed color-mix(in srgb, var(--text) 8%, transparent);
+  border-radius: var(--r);
+  margin-bottom: var(--sp-4);
+  animation: fadeInUp 0.5s var(--ease-out);
+}
+.vacio-illo {
+  width: 88px;
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  margin-bottom: var(--sp-4);
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 6%, transparent);
+}
+.vacio h3 {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  letter-spacing: 1.5px;
+  margin: 0 0 var(--sp-2);
+  color: var(--text);
+}
+.vacio p {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  margin: 0;
+  max-width: 320px;
+  line-height: 1.55;
+}

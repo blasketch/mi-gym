@@ -6,7 +6,9 @@ import { getSesionHoy, getUltimaSesionPrevia, getSesiones, guardarSet, borrarSet
 import { hoyISO } from "../lib/date.js";
 import { parseDescanso, resumenSeries, ajustarReps, topReps, sugerencia } from "../lib/series.js";
 import { iniciarDescanso, cerrarDescanso } from "../lib/temporizador.js";
-import { ejercicioEmoji } from "../lib/emojis.js";
+import { icono } from "../components/icons.js";
+import { haptic } from "../lib/haptics.js";
+import { lanzarConfetti } from "../components/confetti.js";
 
 import { renderInicio } from "./inicio.js";
 import { ocultarTabbar, mostrarTabbar } from "../components/tabbar.js";
@@ -32,8 +34,25 @@ export function resumenSesion(dia) {
   return { seriesHechas, volumen, prs };
 }
 
+function ejercicioIcono(nombre) {
+  const n = nombre.toLowerCase();
+  if (n.includes('curl') || n.includes('extensión') || n.includes('elevación') || n.includes('face pull') || n.includes('laterales') || n.includes('martillo')) return 'llama';
+  if (n.includes('plancha') || n.includes('piernas') || n.includes('rueda')) return 'foco';
+  if (n.includes('sentadilla') || n.includes('press') || n.includes('peso muerto') || n.includes('remo') || n.includes('dominadas') || n.includes('hip thrust') || n.includes('jalón') || n.includes('prensa') || n.includes('fondos') || n.includes('banca')) return 'pesa';
+  if (n.includes('cardio') || n.includes('pasos')) return 'pasos';
+  return 'brazo';
+}
+
 function mostrarResumen(app, dia) {
   const { seriesHechas, volumen, prs } = resumenSesion(dia);
+
+  // 🎉 Celebración si hubo PRs
+  if (prs.length) {
+    haptic("heavy");
+    setTimeout(() => lanzarConfetti({ particulas: 140 }), 60);
+  } else {
+    haptic("medium");
+  }
 
   let cuerpo;
   if (seriesHechas === 0) {
@@ -41,7 +60,7 @@ function mostrarResumen(app, dia) {
   } else {
     const prsHTML = prs.length
       ? `<div class="resumen-prs">
-           <div class="resumen-prs-titulo">¡Récords nuevos!</div>
+           <div class="resumen-prs-titulo">${icono("trofeo", 18)} ¡Récords nuevos!</div>
            ${prs.map((p) => `<div class="pr-item">${p.nombre} · ${p.peso} kg</div>`).join("")}
          </div>`
       : `<p class="sub" style="text-align:center; margin-top:12px">Sin récords hoy, pero sumando. ¡Sigue así!</p>`;
@@ -65,8 +84,8 @@ function mostrarResumen(app, dia) {
     </div>
   `;
   document.body.appendChild(modal);
-  document.getElementById("resumen-cerrar").addEventListener("click", () => modal.remove());
-  document.getElementById("resumen-inicio").addEventListener("click", () => { modal.remove(); renderInicio(app); });
+  document.getElementById("resumen-cerrar").addEventListener("click", () => { haptic("light"); modal.remove(); });
+  document.getElementById("resumen-inicio").addEventListener("click", () => { haptic("light"); modal.remove(); renderInicio(app); });
 }
 
 export function renderDia(app, diaId) {
@@ -81,7 +100,7 @@ export function renderDia(app, diaId) {
 
   let html = `
     <header class="cabecera">
-      <button class="volver" id="btn-volver">← Volver</button>
+      <button class="volver" id="btn-volver">${icono("flechaIzquierda", 18)} Volver</button>
       <div>
         <h1>${dia.nombre}</h1>
         <p class="sub">${dia.enfoque}</p>
@@ -99,10 +118,10 @@ export function renderDia(app, diaId) {
     const refUltima = previa
       ? `<div class="ref-ultima">Última vez: ${resumenSeries(previa)} · ${fechaCorta(previa.fecha)}</div>`
       : `<div class="ref-ultima">Primer registro de este ejercicio</div>`;
-    const nota = ej.nota ? `<div class="nota">${ej.nota}</div>` : "";
+    const nota = ej.nota ? `<div class="nota">${icono("bombilla", 14)} <span>${ej.nota}</span></div>` : "";
 
     const sug = sugerencia(ej, series, top);
-    const sugHTML = sug ? `<div class="sugerencia">${sug}</div>` : "";
+    const sugHTML = sug ? `<div class="sugerencia">${icono("flechaArriba", 14)} <span>${sug}</span></div>` : "";
 
     let filas = "";
     for (let i = 0; i < series; i++) {
@@ -115,14 +134,14 @@ export function renderDia(app, diaId) {
           <span class="serie-num">${i + 1}</span>
           <input class="in-peso" type="number" inputmode="decimal" placeholder="kg" value="${vp}">
           <input class="in-reps" type="number" inputmode="numeric" placeholder="reps" value="${vr}">
-          <button class="check" data-ej="${ej.id}" data-serie="${i}" data-descanso="${parseDescanso(ej.descanso)}">✓</button>
+          <button class="check" data-ej="${ej.id}" data-serie="${i}" data-descanso="${parseDescanso(ej.descanso)}" aria-label="Marcar serie">${icono("check", 18)}</button>
         </div>
       `;
     }
 
     html += `
       <div class="ejercicio" style="animation-delay:${ejIdx * 0.06}s">
-        <div class="titulo">${ejercicioEmoji(ej.nombre)} ${ej.nombre}</div>
+        <div class="titulo">${icono(ejercicioIcono(ej.nombre), 18)} <span>${ej.nombre}</span></div>
         <div class="prescripcion">${series} series × ${reps} reps · descanso ${ej.descanso}</div>
         ${nota}
         ${sugHTML}
@@ -136,7 +155,7 @@ export function renderDia(app, diaId) {
 
   app.innerHTML = html;
 
-  document.getElementById("btn-volver").addEventListener("click", () => { mostrarTabbar(); renderInicio(app); });
+  document.getElementById("btn-volver").addEventListener("click", () => { haptic("light"); mostrarTabbar(); renderInicio(app); });
   document.getElementById("btn-terminar").addEventListener("click", () => mostrarResumen(app, dia));
 
   document.querySelectorAll(".check").forEach((btn) => {
@@ -151,6 +170,7 @@ export function renderDia(app, diaId) {
       if (fila.classList.contains("hecha")) {
         fila.classList.remove("hecha");
         borrarSet(ejId, indice);
+        haptic("light");
         return;
       }
 
@@ -160,6 +180,7 @@ export function renderDia(app, diaId) {
 
       guardarSet(ejId, indice, isNaN(peso) ? null : peso, isNaN(reps) ? null : reps);
       fila.classList.add("hecha");
+      haptic("medium");
       iniciarDescanso(descanso);
     });
   });

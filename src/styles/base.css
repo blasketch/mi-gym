@@ -84,3 +84,15 @@ body::before {
   clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
 .tabular { font-variant-numeric: tabular-nums; }
+
+/* Contenedor de icono SVG (inyectado por src/components/icons.js) */
+.icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+  color: currentColor;
+  line-height: 0;
+}
+.icono svg { display: block; width: 100%; height: 100%; }

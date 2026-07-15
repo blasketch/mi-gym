@@ -5,6 +5,8 @@ import { fechaCorta } from "../lib/fechas.js";
 import { cerrarDescanso } from "../lib/temporizador.js";
 import { graficaHTML, montarGraficas } from "../lib/grafica.js";
 import { puntosEjercicio, prEjercicio, getPesoCorporal, guardarPesoCorporal } from "../lib/progreso.js";
+import { icono } from "../components/icons.js";
+import { countUpNodes } from "../lib/count-up.js";
 
 import { renderInicio } from "./inicio.js";
 import { ocultarTabbar, mostrarTabbar } from "../components/tabbar.js";
@@ -18,7 +20,7 @@ export function renderProgreso(app) {
 
   let html = `
     <header class="cabecera">
-      <button class="volver" id="btn-volver">← Volver</button>
+      <button class="volver" id="btn-volver">${icono("flechaIzquierda", 18)} Volver</button>
       <div><h1>Progreso</h1></div>
     </header>
     <div class="ejercicio">
@@ -30,6 +32,12 @@ export function renderProgreso(app) {
       </div>
       ${graficaHTML(pesos.map((p) => ({ fecha: p.fecha, valor: p.peso })), "kg")}
     </div>
+    ${ultimo ? "" : `
+      <div class="vacio">
+        <div class="vacio-illo">${icono("calendario", 48)}</div>
+        <p>Registra tu peso arriba para ver la evolución.</p>
+      </div>
+    `}
   `;
 
   let lista = "";
@@ -44,17 +52,24 @@ export function renderProgreso(app) {
       lista += `
         <div class="ejercicio">
           <div class="titulo">${ej.nombre}</div>
-          <div class="pr">${prTxt}</div>
+          <div class="pr">${icono("trofeo", 14)} <span>${prTxt}</span></div>
           ${graficaHTML(puntos, unidad)}
         </div>
       `;
     });
   });
 
-  html += lista || `<p class="sub" style="text-align:center; margin-top:24px">Aún no has registrado ejercicios. Entrena y tu progreso aparecerá aquí.</p>`;
+  html += lista || `
+    <div class="vacio">
+      <div class="vacio-illo">${icono("pesaVacia", 64)}</div>
+      <h3>Tu progreso empezará pronto</h3>
+      <p>Completa tu primer entrenamiento y aquí verás tu evolución con gráficas, PRs y peso corporal.</p>
+    </div>
+  `;
 
   app.innerHTML = html;
   montarGraficas(app);
+  countUpNodes(app.querySelectorAll("[data-count]"));
 
   document.getElementById("btn-volver").addEventListener("click", () => { mostrarTabbar(); renderInicio(app); });
   document.getElementById("btn-peso-corp").addEventListener("click", () => {

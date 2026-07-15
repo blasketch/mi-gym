@@ -56,16 +56,24 @@
   border-radius: var(--radius-sm);
   padding: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
+  transition: border-color var(--t-base) var(--ease-out), transform var(--t-base) var(--ease-out);
 }
+.habito-metrica:hover {
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  transform: translateY(-1px);
+}
+.habito-metrica-anillo { flex-shrink: 0; }
+.habito-metrica-anillo .anillo { display: block; color: var(--text); }
+.habito-metrica-info { flex: 1; min-width: 0; }
 .habito-metrica-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
 }
-.habito-metrica-nombre { font-size: 14px; font-weight: 600; }
+.habito-metrica-nombre { font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
 .habito-metrica-fraccion {
   display: inline-flex;
   align-items: center;
@@ -93,28 +101,8 @@
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
 }
 .habito-metrica-de { font-size: 12px; }
-.habito-metrica-barra {
-  position: relative;
-  height: 8px;
-  background: var(--surface-2);
-  border-radius: 4px;
-  overflow: hidden;
-}
-.habito-metrica-fill {
-  height: 100%;
-  background: var(--gradient);
-  border-radius: 4px;
-  transition: width 0.4s ease;
-}
-.habito-metrica-pct {
-  position: absolute;
-  right: 0;
-  top: -18px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
-}
+.habito-metrica-barra { display: none; }
+.habito-metrica-pct { display: none; }
 
 /* ========== VISTA AJUSTES ========== */
 .ajuste-grupo { margin-bottom: 18px; }

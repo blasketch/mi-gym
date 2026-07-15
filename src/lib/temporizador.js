@@ -7,11 +7,18 @@
 let tempInterval = null;
 let restantes = 0;
 
+function svgInline(path) {
+  return `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
+}
+
+const ICONO_TIMER = svgInline(`<circle cx="12" cy="14" r="8"/><path d="M12 10v4l2 2"/><path d="M9 2h6"/><path d="M12 2v3"/><path d="M19 5l-2 2"/>`);
+const ICONO_DONE  = svgInline(`<circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/>`);
+
 export function crearBanner() {
   if (document.getElementById("descanso-banner")) return;
   const b = document.createElement("div");
   b.id = "descanso-banner";
-  b.innerHTML = `<span id="descanso-texto"></span><button id="descanso-cerrar">Saltar</button>`;
+  b.innerHTML = `<span id="descanso-icono">${ICONO_TIMER}</span><span id="descanso-texto"></span><button id="descanso-cerrar">Saltar</button>`;
   document.body.appendChild(b);
   document.getElementById("descanso-cerrar").addEventListener("click", detenerDescanso);
 }
@@ -22,8 +29,10 @@ export function iniciarDescanso(segundos) {
   restantes = segundos;
   const banner = document.getElementById("descanso-banner");
   const texto = document.getElementById("descanso-texto");
+  const icono = document.getElementById("descanso-icono");
   banner.classList.add("visible");
   banner.classList.remove("fin");
+  if (icono) icono.innerHTML = ICONO_TIMER;
 
   const pinta = () => {
     const m = Math.floor(restantes / 60);
@@ -39,8 +48,8 @@ export function iniciarDescanso(segundos) {
       tempInterval = null;
       texto.textContent = "¡A por la siguiente serie!";
       banner.classList.add("fin");
+      if (icono) icono.innerHTML = ICONO_DONE;
       if (navigator.vibrate) navigator.vibrate(300);
-      // pitido corto opcional
       try {
         const Ctx = window.AudioContext || window.webkitAudioContext;
         if (Ctx) {
@@ -54,7 +63,7 @@ export function iniciarDescanso(segundos) {
           osc.start();
           osc.stop(ctx.currentTime + 0.18);
         }
-      } catch { /* sin audio, no pasa nada */ }
+      } catch { /* sin audio */ }
       setTimeout(() => banner.classList.remove("visible"), 2500);
     } else {
       pinta();
@@ -62,10 +71,8 @@ export function iniciarDescanso(segundos) {
   }, 1000);
 }
 
-// Compatibilidad: alias del comportamiento original (parar + ocultar).
 export function cerrarDescanso() { detenerDescanso(); }
 
-// Solo oculta visualmente, el contador sigue corriendo.
 export function ocultarDescanso() {
   const banner = document.getElementById("descanso-banner");
   if (banner) banner.classList.remove("visible");
