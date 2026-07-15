@@ -1,0 +1,53 @@
+name: Deploy to Capgo
+
+# Sube el bundle web (dist/) a Capgo en cada push a main.
+# Capgo distribuye la actualización a la app instalada en el móvil.
+# Requiere el secret CAPGO_TOKEN (Settings → Secrets and variables → Actions).
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-capgo
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web bundle
+        run: npm run build
+
+      - name: Deploy to Capgo (production channel)
+        run: |
+          npm install -g @capgo/cli
+          npx @capgo/cli bundle upload \
+            --channel production \
+            --apikey "$CAPGO_TOKEN"
+        env:
+          CAPGO_TOKEN: ${{ secrets.CAPGO_TOKEN }}
+
+      - name: Resumen
+        if: always()
+        run: |
+          echo "### Deploy to Capgo" >> $GITHUB_STEP_SUMMARY
+          echo "- Estado: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Rama: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

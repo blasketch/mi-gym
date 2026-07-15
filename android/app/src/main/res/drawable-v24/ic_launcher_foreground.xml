@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Pesa de barra centrada en el área segura (66x66 en 108x108) -->
+    <path
+        android:fillType="nonZero"
+        android:pathData="M30,52h48a2,2 0 0 1 2,2v0a2,2 0 0 1 -2,2h-48a2,2 0 0 1 -2,-2v0a2,2 0 0 1 2,-2z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="20"
+                android:startY="54"
+                android:endX="88"
+                android:endY="54"
+                android:type="linear">
+                <item android:offset="0" android:color="#f97316"/>
+                <item android:offset="1" android:color="#ef4444"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Disco izq grande -->
+    <path
+        android:fillType="nonZero"
+        android:pathData="M22,42h6a2,2 0 0 1 2,2v20a2,2 0 0 1 -2,2h-6a2,2 0 0 1 -2,-2v-20a2,2 0 0 1 2,-2z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="20"
+                android:startY="42"
+                android:endX="30"
+                android:endY="66"
+                android:type="linear">
+                <item android:offset="0" android:color="#f97316"/>
+                <item android:offset="1" android:color="#ef4444"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Disco izq pequeño -->
+    <path
+        android:fillType="nonZero"
+        android:pathData="M30,46h3a1.5,1.5 0 0 1 1.5,1.5v13a1.5,1.5 0 0 1 -1.5,1.5h-3a1.5,1.5 0 0 1 -1.5,-1.5v-13a1.5,1.5 0 0 1 1.5,-1.5z"
+        android:fillColor="#fb923c"
+        android:fillAlpha="0.9"/>
+    <!-- Disco der grande -->
+    <path
+        android:fillType="nonZero"
+        android:pathData="M80,42h6a2,2 0 0 1 2,2v20a2,2 0 0 1 -2,2h-6a2,2 0 0 1 -2,-2v-20a2,2 0 0 1 2,-2z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="78"
+                android:startY="42"
+                android:endX="88"
+                android:endY="66"
+                android:type="linear">
+                <item android:offset="0" android:color="#f97316"/>
+                <item android:offset="1" android:color="#ef4444"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Disco der pequeño -->
+    <path
+        android:fillType="nonZero"
+        android:pathData="M75,46h3a1.5,1.5 0 0 1 1.5,1.5v13a1.5,1.5 0 0 1 -1.5,1.5h-3a1.5,1.5 0 0 1 -1.5,-1.5v-13a1.5,1.5 0 0 1 1.5,-1.5z"
+        android:fillColor="#fb923c"
+        android:fillAlpha="0.9"/>
+</vector>

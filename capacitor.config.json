@@ -1,0 +1,33 @@
+{
+  "appId": "com.migym.app",
+  "appName": "Mi Gym",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#0a0a0f",
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "backgroundColor": "#0a0a0f",
+      "androidSplashResourceName": "splash",
+      "splashFullScreen": true,
+      "splashImmersive": true
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0a0a0f"
+    },
+    "CapacitorUpdater": {
+      "appId": "com.migym.app",
+      "autoUpdate": true,
+      "resetWhenUpdate": true,
+      "channel": "production",
+      "directUpdate": false,
+      "defaultChannel": "production",
+      "updateUrl": "https://api.capgo.app/updates"
+    }
+  }
+}
